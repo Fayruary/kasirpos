@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { motion, animate } from "framer-motion";
 import {
   Navbar,
   NavBody,
   NavItems,
   MobileNav,
-  NavbarLogo,
   NavbarButton,
   MobileNavHeader,
   MobileNavToggle,
@@ -17,51 +17,81 @@ export function NavbarDemo() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { name: "Features", link: "#features" },
-    { name: "Pricing", link: "#pricing" },
-    { name: "Contact", link: "#contact" },
+    { name: "Fitur", link: "#features" },
+    { name: "Kenapa Kami", link: "#why-choose-us" },
+    { name: "Testimonial", link: "#testimonials" },
+    { name: "Harga", link: "#pricing" },
   ];
 
-  return (
-    <Navbar>
-      {/* Desktop */}
-      <NavBody>
-        <NavbarLogo />
-        <NavItems items={navItems} />
+  const scrollToSection = (selector: string) => {
+    const el = document.querySelector(selector) as HTMLElement;
+    if (!el) return;
 
-        <div className="flex items-center gap-4">
-          <NavbarButton variant="secondary">
-            Login
-          </NavbarButton>
-          <NavbarButton variant="primary">
-            Book a call
-          </NavbarButton>
-        </div>
+    const targetY = el.offsetTop;
+
+    animate(window.scrollY, targetY, {
+      type: "spring",
+      stiffness: 100,
+      damping: 20,
+      onUpdate: (value) => window.scrollTo(0, value),
+    });
+  };
+
+  return (
+    <Navbar className="fixed top-0 w-full text-gray-900 z-50">
+      {/* Desktop */}
+    <NavBody className="hidden md:flex max-w-6xl mx-auto px-6 items-center">
+  {/* Logo desktop hanya tampil di md+ */}
+  <div className="hidden md:block text-xl font-bold tracking-tight">KasirPOS</div>
+
+  {/* NavItems desktop */}
+  <div className="hidden md:flex flex-1 justify-center gap-10 ml-5">
+    {navItems.map((item) => (
+      <button
+        key={item.name}
+        onClick={() => scrollToSection(item.link)}
+        className="text-gray-900 hover:text-gray-700 font-medium"
+      >
+        {item.name}
+      </button>
+    ))}
+  </div>
+
+  {/* Desktop buttons */}
+  <div className="hidden md:flex items-center gap-2">
+    <NavbarButton variant="secondary">Masuk</NavbarButton>
+    <NavbarButton variant="primary">Coba Gratis</NavbarButton>
+  </div>
       </NavBody>
 
       {/* Mobile */}
       <MobileNav>
-        <MobileNavHeader>
-          <NavbarLogo />
-          <MobileNavToggle
-            isOpen={isMobileMenuOpen}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          />
+        <MobileNavHeader className="max-w-6xl mx-auto px-6 flex justify-between items-center">
+         <div className="text-xl font-bold">KasirPOS</div>
+    <MobileNavToggle
+      isOpen={isMobileMenuOpen}
+      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+    />
         </MobileNavHeader>
 
+        {/* Mobile menu hanya satu */}
         <MobileNavMenu
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
         >
           {navItems.map((item) => (
-            <a
+            <motion.button
               key={item.name}
-              href={item.link}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block text-neutral-700 dark:text-neutral-300"
+              onClick={() => {
+                scrollToSection(item.link);
+                setIsMobileMenuOpen(false);
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="block w-full text-left text-neutral-700 py-2"
             >
               {item.name}
-            </a>
+            </motion.button>
           ))}
 
           <div className="flex flex-col gap-4 pt-4">
@@ -70,7 +100,7 @@ export function NavbarDemo() {
               className="w-full"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Login
+              Masuk
             </NavbarButton>
 
             <NavbarButton
@@ -78,7 +108,7 @@ export function NavbarDemo() {
               className="w-full"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Book a call
+              Coba Gratis
             </NavbarButton>
           </div>
         </MobileNavMenu>
