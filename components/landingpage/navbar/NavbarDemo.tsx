@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, animate } from "framer-motion";
 import {
   Navbar,
@@ -22,6 +23,8 @@ export function NavbarDemo() {
     { name: "Testimonial", link: "#testimonials" },
     { name: "Harga", link: "#pricing" },
   ];
+
+  const router = useRouter();
 
   const scrollToSection = (selector: string) => {
     const el = document.querySelector(selector) as HTMLElement;
@@ -59,8 +62,16 @@ export function NavbarDemo() {
 
   {/* Desktop buttons */}
   <div className="hidden md:flex items-center gap-2">
-    <NavbarButton variant="secondary">Masuk</NavbarButton>
-    <NavbarButton variant="primary">Coba Gratis</NavbarButton>
+    <NavbarButton
+  variant="secondary"
+  onClick={() => router.push("/login")}
+>
+  Masuk
+</NavbarButton>
+    <NavbarButton variant="primary" 
+    onClick={() => router.push("/register")}
+  >
+   Coba Gratis</NavbarButton>
   </div>
       </NavBody>
 
@@ -98,7 +109,7 @@ export function NavbarDemo() {
             <NavbarButton
               variant="secondary"
               className="w-full"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() => router.push("/login")}
             >
               Masuk
             </NavbarButton>
