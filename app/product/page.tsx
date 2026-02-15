@@ -282,21 +282,22 @@ export default function ProductPage() {
                     <th className="py-3 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Produk
                     </th>
-                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      SKU
-                    </th>
-                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Kategori
-                    </th>
-                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Harga
-                    </th>
-                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Stok
-                    </th>
-                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Aksi
-                    </th>
+                  <th className="py-3 pl-8 pr-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+  SKU
+</th>
+<th className="py-3 pl-8 pr-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+  Kategori
+</th>
+<th className="py-3 pl-8 pr-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+  Harga
+</th>
+<th className="py-3 pl-9 pr-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+  Stok
+</th>
+<th className="py-3 pl-8 pr-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+  Aksi
+</th>
+
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
