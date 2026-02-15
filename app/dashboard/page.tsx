@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   TrendingUp,
   ShoppingCart,
@@ -106,11 +107,11 @@ export default function DashboardPage() {
   };
 
   const menuItems = [
-    { name: "Dashboard", icon: TrendingUp },
-    { name: "Produk", icon: Package },
-    { name: "Penjualan", icon: ShoppingCart },
-    { name: "Laporan", icon: BarChart2 },
-    { name: "Pengaturan", icon: Settings },
+    { name: "Dashboard", icon: TrendingUp, href: "/dashboard" },
+    { name: "Produk", icon: Package, href: "/product" },
+    { name: "Penjualan", icon: ShoppingCart, href: "/penjualan" },
+    { name: "Laporan", icon: BarChart2, href: "/laporan" },
+    { name: "Pengaturan", icon: Settings, href: "/pengaturan" },
   ];
 
   return (
@@ -126,9 +127,9 @@ export default function DashboardPage() {
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-1">
           {menuItems.map((item) => (
-            <button
+            <Link
               key={item.name}
-              onClick={() => setActiveMenu(item.name)}
+              href={item.href}
               className={`
                 flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all
                 ${
@@ -145,7 +146,7 @@ export default function DashboardPage() {
               {activeMenu === item.name && (
                 <ChevronRight className="w-4 h-4" />
               )}
-            </button>
+            </Link>
           ))}
         </nav>
 
