@@ -99,59 +99,76 @@ export default function LaporanPage() {
   }, [activeReport, dateFilter]);
 
   async function fetchReportData() {
-    try {
-      setIsLoading(true);
-      
-      if (activeReport === "penjualan") {
-        const res = await fetch("/api/sales-detail");
-        const data = await res.json();
-        setSales(Array.isArray(data) ? data : []);
-      }
-      
-      if (activeReport === "produk") {
-        const res = await fetch("/api/best-selling");
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          // Add mock price and revenue
-          const formatted: BestSelling[] = data.map((item: any) => ({
-            name: item.name,
-            total_sold: item.total_sold,
-            price: Math.floor(Math.random() * 500000) + 50000, // Mock price
-            revenue: item.total_sold * (Math.floor(Math.random() * 500000) + 50000),
-            category: "Electronics", // Mock category
-          }));
-          setBestSelling(formatted);
-        }
-      }
-      
-      if (activeReport === "stok") {
-        // Mock stock history data
-        const mockStockHistory: StockHistory[] = [
-          { id: 1, product_name: "Product A", type: "in", quantity: 100, note: "Pembelian supplier", created_at: new Date().toISOString() },
-          { id: 2, product_name: "Product B", type: "out", quantity: 50, note: "Penjualan", created_at: new Date().toISOString() },
-          { id: 3, product_name: "Product C", type: "in", quantity: 75, note: "Restock", created_at: new Date().toISOString() },
-          { id: 4, product_name: "Product A", type: "out", quantity: 30, note: "Penjualan", created_at: new Date().toISOString() },
-          { id: 5, product_name: "Product D", type: "in", quantity: 200, note: "Pembelian supplier", created_at: new Date().toISOString() },
-        ];
-        setStockHistory(mockStockHistory);
-      }
-      
-      if (activeReport === "kasir") {
-        // Mock cashier close data
-        const mockCashierClose: CashierClose[] = [
-          { id: 1, cashier_name: "Admin", opening_balance: 1000000, closing_balance: 5500000, total_sales: 4500000, total_transactions: 45, created_at: new Date().toISOString() },
-          { id: 2, cashier_name: "Kasir 1", opening_balance: 1000000, closing_balance: 3200000, total_sales: 2200000, total_transactions: 28, created_at: new Date(Date.now() - 86400000).toISOString() },
-          { id: 3, cashier_name: "Kasir 2", opening_balance: 1000000, closing_balance: 4800000, total_sales: 3800000, total_transactions: 52, created_at: new Date(Date.now() - 172800000).toISOString() },
-        ];
-        setCashierClose(mockCashierClose);
-      }
-      
-    } catch (error) {
-      console.error("Error fetching report data:", error);
-    } finally {
-      setIsLoading(false);
+  try {
+    setIsLoading(true);
+
+    const params = `?period=${dateFilter}`;
+
+    if (activeReport === "penjualan") {
+      const res = await fetch(`/api/sales-detail${params}`);
+      const data = await res.json();
+      setSales(Array.isArray(data) ? data : []);
     }
+
+    if (activeReport === "produk") {
+      const res = await fetch(`/api/best-selling${params}`);
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        const formatted: BestSelling[] = data.map((item: any) => ({
+          name: item.name,
+          total_sold: item.total_sold,
+          price: Number(item.price ?? 0),
+          revenue: Number(item.revenue ?? 0),
+          category: item.category ?? "-",
+        }));
+
+        setBestSelling(formatted);
+      }
+    }
+
+    if (activeReport === "stok") {
+      const res = await fetch(`/api/stock-history${params}`);
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        const formatted: StockHistory[] = data.map((item: any) => ({
+          id: item.id,
+          product_name: item.product_name,
+          type: item.type,
+          quantity: item.quantity,
+          note: item.note ?? "-",
+          created_at: item.created_at,
+        }));
+
+        setStockHistory(formatted);
+      }
+    }
+
+   if (activeReport === "kasir") {
+  const res = await fetch(`/api/cashier-close${params}`);
+  const json = await res.json();
+  
+  const data = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
+
+  const formatted: CashierClose[] = data.map((item: any) => ({
+    id: item.id,
+    cashier_name: item.cashier_name,
+    opening_balance: Number(item.opening_balance ?? 0),
+    closing_balance: Number(item.closing_balance ?? 0),
+    total_sales: Number(item.total_sales ?? 0),
+    total_transactions: Number(item.total_transactions ?? 0),
+    created_at: item.created_at,
+  }));
+
+  setCashierClose(formatted);
+}
+  } catch (error) {
+    console.error("Error fetching report data:", error);
+  } finally {
+    setIsLoading(false);
   }
+}
 
   const menuItems = [
     { name: "Dashboard", icon: TrendingUp, href: "/dashboard" },
@@ -372,13 +389,18 @@ export default function LaporanPage() {
                         <div className="p-4 border border-gray-200 rounded-xl">
                           <p className="text-sm text-gray-500 mb-1">Total Pendapatan</p>
                           <p className="text-2xl font-bold text-gray-900">
-                            Rp {(filteredSales.reduce((sum, s) => sum + Number(s.total_amount), 0) / 1000000).toFixed(1)}jt
+                          Rp {filteredSales.length > 0
+  ? filteredSales.reduce((sum, s) => sum + Number(s.total_amount), 0).toLocaleString("id-ID")
+  : "0"}
                           </p>
                         </div>
                         <div className="p-4 border border-gray-200 rounded-xl">
                           <p className="text-sm text-gray-500 mb-1">Rata-rata Transaksi</p>
                           <p className="text-2xl font-bold text-gray-900">
-                            Rp {(filteredSales.reduce((sum, s) => sum + Number(s.total_amount), 0) / filteredSales.length / 1000).toFixed(0)}k
+                            Rp {filteredSales.length > 0
+  ? filteredSales.reduce((sum, s) => sum + Number(s.total_amount), 0).toLocaleString("id-ID")
+  : "0"}
+
                           </p>
                         </div>
                       </div>
@@ -587,7 +609,7 @@ export default function LaporanPage() {
                         <div className="p-4 border border-gray-200 rounded-xl">
                           <p className="text-sm text-gray-500 mb-1">Total Penjualan</p>
                           <p className="text-2xl font-bold text-gray-900">
-                            Rp {(filteredCashier.reduce((sum, c) => sum + c.total_sales, 0) / 1000000).toFixed(1)}jt
+                             Rp {filteredCashier.reduce((sum, c) => sum + c.total_sales, 0).toLocaleString("id-ID")}
                           </p>
                         </div>
                         <div className="p-4 border border-gray-200 rounded-xl">

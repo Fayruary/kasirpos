@@ -85,31 +85,53 @@ export default function PengaturanPage() {
     setTimeout(() => setSaveMessage(""), 3000);
   };
 
-  const handlePasswordChange = () => {
-    if (!passwords.current || !passwords.new || !passwords.confirm) {
-      setErrorMessage("Semua field harus diisi!");
+  const handlePasswordChange = async () => {
+  if (!passwords.current || !passwords.new || !passwords.confirm) {
+    setErrorMessage("Semua field harus diisi!");
+    setSaveMessage("");
+    return;
+  }
+
+  if (passwords.new !== passwords.confirm) {
+    setErrorMessage("Kata sandi baru tidak cocok!");
+    setSaveMessage("");
+    return;
+  }
+
+  if (passwords.new.length < 6) {
+    setErrorMessage("Kata sandi minimal 6 karakter!");
+    setSaveMessage("");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: 1, // ganti dengan user ID dari session/login
+        currentPassword: passwords.current,
+        newPassword: passwords.new,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setErrorMessage(data.error || "Terjadi kesalahan");
       setSaveMessage("");
       return;
     }
-    
-    if (passwords.new !== passwords.confirm) {
-      setErrorMessage("Kata sandi baru tidak cocok!");
-      setSaveMessage("");
-      return;
-    }
-    
-    if (passwords.new.length < 6) {
-      setErrorMessage("Kata sandi minimal 6 karakter!");
-      setSaveMessage("");
-      return;
-    }
-    
-    // Simulate API call
-    setSaveMessage("Kata sandi berhasil diubah!");
+
+    setSaveMessage(data.message);
     setErrorMessage("");
     setPasswords({ current: "", new: "", confirm: "" });
     setTimeout(() => setSaveMessage(""), 3000);
-  };
+  } catch (error) {
+    setErrorMessage("Terjadi kesalahan jaringan");
+    setSaveMessage("");
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-gray-50">

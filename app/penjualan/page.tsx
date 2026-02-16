@@ -101,22 +101,21 @@ export default function PenjualanPage() {
   }
 
   function calculateProductSales(salesData: Sale[]) {
-    // This is a mock calculation - you should fetch from API with proper JOIN
-    // For now, we'll use best-selling API
-    fetch("/api/best-selling")
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          const formatted = data.map((item: any) => ({
-            product_name: item.name,
-            total_sold: item.total_sold,
-            total_revenue: item.total_sold * 50000, // Mock price
-          }));
-          setProductSales(formatted);
-        }
-      })
-      .catch(err => console.error("Error fetching best-selling:", err));
-  }
+  fetch("/api/best-selling")
+    .then(res => res.json())
+    .then(data => {
+      if (Array.isArray(data)) {
+        const formatted = data.map((item: any) => ({
+          product_name: item.name,
+          total_sold: Number(item.total_sold || 0),      // <- pastikan number
+          total_revenue: Number(item.revenue || 0),      // <- pastikan number
+        }));
+        setProductSales(formatted);
+      }
+    })
+    .catch(err => console.error("Error fetching best-selling:", err));
+}
+
 
   // Filter sales by period
   const filteredSales = sales.filter(sale => {
@@ -310,29 +309,33 @@ export default function PenjualanPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                title: "Total Pendapatan",
-                value: `Rp ${(totalRevenue / 1000000).toFixed(1)}jt`,
-                icon: TrendingUp,
-                color: "from-gray-900 to-gray-900",
-              },
+  title: "Total Pendapatan",
+  value: `Rp ${filteredSales.reduce((sum, s) => sum + Number(s.total_amount), 0).toLocaleString("id-ID")}`,
+  icon: TrendingUp,
+  color: "from-gray-900 to-gray-900",
+},
               {
-                title: "Total Transaksi",
-                value: totalTransactions.toString(),
-                icon: ShoppingCart,
-                color: "from-gray-900 to-gray-900",
-              },
-              {
-                title: "Rata-rata Transaksi",
-                value: `Rp ${(averageTransaction / 1000).toFixed(0)}k`,
-                icon: BarChart2,
-                color: "from-gray-900 to-gray-900",
-              },
-              {
-                title: "Produk Terjual",
-                value: productSales.reduce((sum, p) => sum + p.total_sold, 0).toString(),
-                icon: Package,
-                color: "from-gray-900 to-gray-900",
-              },
+  title: "Total Transaksi",
+  value: filteredSales.length.toString(),
+  icon: ShoppingCart,
+  color: "from-gray-900 to-gray-900",
+},
+
+             {
+  title: "Rata-rata Transaksi",
+  value: `Rp ${(
+    filteredSales.reduce((sum, s) => sum + Number(s.total_amount), 0) /
+    (filteredSales.length || 1)
+  ).toLocaleString("id-ID")}`,
+  icon: BarChart2,
+  color: "from-gray-900 to-gray-900",
+},
+           {
+  title: "Produk Terjual",
+  value: productSales.reduce((sum, p) => sum + Number(p.total_sold || 0), 0).toString(),
+  icon: Package,
+  color: "from-gray-900 to-gray-900",
+}
             ].map((stat, idx) => (
               <div
                 key={idx}

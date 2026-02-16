@@ -5,16 +5,18 @@ export async function GET() {
   try {
     const [rows] = await db.query(`
       SELECT 
-        p.name,
-        cat.name AS category,
-        p.price,
-        SUM(si.quantity) AS total_sold,
-        SUM(si.quantity * si.price) AS revenue
-      FROM sale_items si
-      JOIN products p ON si.product_id = p.id
-      JOIN categories cat ON p.category_id = cat.id
-      GROUP BY p.id
-      ORDER BY total_sold DESC
+        sl.id,
+        p.name AS product_name,
+        sl.type,
+        sl.quantity,
+        sl.created_at,
+        CASE 
+          WHEN sl.type = 'in' THEN 'Pembelian'
+          ELSE 'Penjualan'
+        END AS note
+      FROM stock_logs sl
+      JOIN products p ON sl.product_id = p.id
+      ORDER BY sl.created_at DESC
     `);
 
     return NextResponse.json(rows);
