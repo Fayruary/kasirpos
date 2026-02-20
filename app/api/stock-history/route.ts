@@ -1,9 +1,10 @@
+// app/api/stock-logs/route.ts
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
 export async function GET() {
   try {
-    const [rows] = await db.query(`
+    const res = await db.query(`
       SELECT 
         sl.id,
         p.name AS product_name,
@@ -19,9 +20,10 @@ export async function GET() {
       ORDER BY sl.created_at DESC
     `);
 
-    return NextResponse.json(rows);
-  } catch (error) {
+    return NextResponse.json(res.rows);
+  } catch (error: unknown) {
     console.error(error);
-    return NextResponse.json({ error: "Gagal ambil data" }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Gagal ambil data", detail: message }, { status: 500 });
   }
 }

@@ -7,8 +7,11 @@ export async function POST(req: NextRequest) {
     const { userId, currentPassword, newPassword } = await req.json();
 
     // Ambil password lama dari DB
-    const [rows] = await db.query("SELECT password FROM users WHERE id = ?", [userId]);
-    const user: any = (rows as any[])[0];
+    const result = await db.query(
+      "SELECT password FROM users WHERE id = $1",
+      [userId]
+    );
+    const user = result.rows[0]; // <-- pakai .rows, bukan destructure
 
     if (!user) {
       return NextResponse.json({ error: "User tidak ditemukan" }, { status: 404 });
@@ -24,11 +27,15 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update ke DB
-    await db.query("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, userId]);
+    await db.query("UPDATE users SET password = $1 WHERE id = $2", [
+      hashedPassword,
+      userId,
+    ]);
 
     return NextResponse.json({ message: "Kata sandi berhasil diubah!" });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 });
+  } catch (err: unknown) {
+    console.error(err);
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

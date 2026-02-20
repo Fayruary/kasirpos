@@ -6,20 +6,28 @@ export async function PUT(req: NextRequest) {
   try {
     const { current, new: newPassword } = await req.json();
 
-    const [rows]: any = await db.execute("SELECT password FROM users WHERE id = ?", [1]);
-    const user = rows[0];
+    // Ambil password user
+    const res = await db.query(
+      "SELECT password FROM users WHERE id = $1",
+      [1] // ganti 1 dengan user id dinamis kalau mau
+    );
 
-    if (!user) return NextResponse.json({ success: false, error: "User tidak ditemukan" });
+    const user = res.rows[0];
+
+    if (!user)
+      return NextResponse.json({ success: false, error: "User tidak ditemukan" });
 
     const valid = bcrypt.compareSync(current, user.password);
-    if (!valid) return NextResponse.json({ success: false, error: "Kata sandi saat ini salah" });
+    if (!valid)
+      return NextResponse.json({ success: false, error: "Kata sandi saat ini salah" });
 
     const hashed = bcrypt.hashSync(newPassword, 10);
 
-    await db.execute("UPDATE users SET password = ? WHERE id = ?", [hashed, 1]);
+    await db.query("UPDATE users SET password = $1 WHERE id = $2", [hashed, 1]);
 
     return NextResponse.json({ success: true, message: "Password berhasil diubah" });
-  } catch (err) {
-    return NextResponse.json({ success: false, error: (err as Error).message }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

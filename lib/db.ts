@@ -1,8 +1,10 @@
-import mysql from "mysql2/promise";
+// lib/db.ts
+import pkg from 'pg';
+const { Pool } = pkg;
 
-export const db = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "Fairuz07", // isi password mysql kamu kalau ada
-  database: "kasirpos_db",
+export const db = new Pool({
+  connectionString: process.env.DATABASE_URL, // dari .env
+  ssl: {
+    rejectUnauthorized: false, // Supabase butuh SSL
+  },
 });
