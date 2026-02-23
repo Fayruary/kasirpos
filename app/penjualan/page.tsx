@@ -309,7 +309,7 @@ export default function PenjualanPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-  title: "Total Pendapatan",
+  title: "Total Pendapatann",
   value: `Rp ${filteredSales.reduce((sum, s) => sum + Number(s.total_amount), 0).toLocaleString("id-ID")}`,
   icon: TrendingUp,
   color: "from-gray-900 to-gray-900",
@@ -368,7 +368,7 @@ export default function PenjualanPage() {
                     { value: "weekly", label: "Mingguan" },
                     { value: "monthly", label: "Bulanan" },
                     { value: "yearly", label: "Tahunan" },
-                    { value: "custom", label: "Kustom" },
+                    { value: "custom", label: "Custom" },
                   ].map((p) => (
                     <button
                       key={p.value}

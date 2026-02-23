@@ -80,11 +80,11 @@ export default function ProductPage() {
   // Get unique categories
   const categories = ["Semua", ...Array.from(new Set(Array.isArray(products) ? products.map(p => p.category) : []))];
 
-  // Calculate stats
-  const totalProducts = Array.isArray(products) ? products.length : 0;
-  const totalStock = Array.isArray(products) ? products.reduce((sum, p) => sum + p.stock, 0) : 0;
-  const lowStock = Array.isArray(products) ? products.filter(p => p.stock < 10).length : 0;
-  const totalValue = Array.isArray(products) ? products.reduce((sum, p) => sum + (p.price * p.stock), 0) : 0;
+  // Hitung stats langsung dari products state
+const totalProducts = products.length; // jumlah total produk
+const totalStock = products.reduce((sum, p) => sum + p.stock, 0); // jumlah total stok semua produk
+const lowStock = products.filter(p => p.stock < 10).length; // jumlah produk dengan stok < 10
+const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0); // total nilai inventori
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -194,52 +194,50 @@ export default function ProductPage() {
 
           {/* STATS CARDS */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                title: "Total Produk",
-                value: totalProducts.toString(),
-                icon: Package,
-                color: "from-gray-900 to-gray-900",
-              },
-              {
-                title: "Total Stok",
-                value: totalStock.toString(),
-                icon: TrendingUp,
-                color: "from-gray-900 to-gray-900",
-              },
-              {
-                title: "Stok Menipis",
-                value: lowStock.toString(),
-                icon: Package,
-                color: "from-gray-900 to-gray-900",
-                alert: lowStock > 0,
-              },
-              {
-                title: "Nilai Inventori",
-                value: `Rp ${(totalValue / 1000000).toFixed(1)}jt`,
-                icon: BarChart2,
-                color: "from-gray-900 to-gray-900",
-              },
-            ].map((stat, idx) => (
-              <div
-                key={idx}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500 mb-2">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                    {stat.alert && (
-                      <p className="text-xs text-red-600 mt-1">Perlu restock!</p>
-                    )}
-                  </div>
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color}`}>
-                    <stat.icon className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+  {[
+    {
+      title: "Total Produk",
+      value: totalProducts.toString(),
+      icon: Package,
+      color: "from-gray-900 to-gray-900",
+    },
+    {
+      title: "Total Stok",
+      value: totalStock.toString(),
+      icon: TrendingUp,
+      color: "from-gray-900 to-gray-900",
+    },
+    {
+      title: "Stok Menipis",
+      value: lowStock.toString(),
+      icon: Package,
+      color: "from-gray-900 to-gray-900",
+      alert: lowStock > 0,
+    },
+    {
+      title: "Nilai Inventori",
+      value: `Rp ${(totalValue / 1000000).toFixed(1)}jt`,
+      icon: BarChart2,
+      color: "from-gray-900 to-gray-900",
+    },
+  ].map((stat, idx) => (
+    <div
+      key={idx}
+      className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all"
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <p className="text-sm text-gray-500 mb-2">{stat.title}</p>
+          <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+          {stat.alert && <p className="text-xs text-red-600 mt-1">Perlu restock!</p>}
+        </div>
+        <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color}`}>
+          <stat.icon className="w-6 h-6 text-white" />
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
 
           {/* FILTER & SEARCH BAR */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
