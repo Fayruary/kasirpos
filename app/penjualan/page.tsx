@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -64,6 +65,55 @@ export default function PenjualanPage() {
   const [productSales, setProductSales] = useState<ProductSale[]>([]);
   const [activeMenu, setActiveMenu] = useState("Penjualan");
   const [isLoading, setIsLoading] = useState(true);
+  const [cart, setCart] = useState<any[]>([]);
+const [products, setProducts] = useState<any[]>([]);
+const [showTransaction, setShowTransaction] = useState(false);
+const [paidAmount, setPaidAmount] = useState(0);
+
+async function handleCheckout() {
+  if (cart.length === 0) {
+    return alert("Keranjang kosong");
+  }
+
+  const total = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  if (paidAmount < total) {
+    return alert("Uang tidak cukup");
+  }
+
+  const response = await fetch("/api/transaksi", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      branch_id: 1,
+      shift_id: 1,
+      user_id: 2,
+      customer_id: 1,
+      payment_method: "cash",
+      paid_amount: paidAmount,
+      items: cart.map(item => ({
+        product_id: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    }),
+  });
+
+  const data = await response.json();
+
+  if (data.success) {
+    alert("Transaksi berhasil! " + data.invoice_code);
+    setCart([]);
+    setPaidAmount(0);
+    setShowTransaction(false);
+    fetchSalesData();
+  } else {
+    alert(data.error);
+  }
+}
   
   // Filter states
   const [period, setPeriod] = useState<PeriodType>("daily");
@@ -206,7 +256,45 @@ export default function PenjualanPage() {
     { name: "Penjualan", icon: ShoppingCart, href: "/penjualan" },
     { name: "Laporan", icon: BarChart2, href: "/laporan" },
     { name: "Pengaturan", icon: Settings, href: "/pengaturan" },
-  ];
+  ];  
+
+  useEffect(() => {
+  fetch("/api/product")
+    .then(res => res.json())
+    .then(data => {
+      if (Array.isArray(data)) setProducts(data);
+    });
+}, []);
+
+function addToCart(product: any) {
+  const existing = cart.find(p => p.id === product.id);
+
+  if (existing) {
+    setCart(cart.map(p =>
+      p.id === product.id
+        ? { ...p, quantity: p.quantity + 1 }
+        : p
+    ));
+  } else {
+    setCart([
+      ...cart,
+      {
+        ...product,
+        price: Number(product.price), // FIX DI SINI
+        quantity: 1
+      }
+    ]);
+  };
+};
+
+// Hapus produk dari cart
+const removeFromCart = (productId: number) => {
+  setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+};
+
+
+
+console.log("Products state:", products);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -304,6 +392,115 @@ export default function PenjualanPage() {
               Export Laporan
             </button>
           </div>
+
+          <button
+  onClick={() => setShowTransaction(true)}
+  className="px-4 py-2 bg-gray-900 text-white rounded-xl"
+>
+  + Transaksi Baru
+</button>
+
+{showTransaction && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white w-full max-w-3xl p-6 rounded-2xl">
+      <h2 className="text-lg font-bold mb-4">Transaksi Baru</h2>
+
+      {/* LIST PRODUK DENGAN KATEGORI */}
+      <div className="mb-4 max-h-64 overflow-auto">
+  <div className="grid grid-cols-3 gap-3">
+    {products.map((product) => (
+      <button
+        key={product.id}
+        onClick={() => addToCart(product)}
+        className="p-3 border rounded-lg hover:bg-gray-50 text-sm flex flex-col"
+      >
+        <span>{product.name}</span>
+        <span className="text-xs text-gray-500">
+          Rp {Number(product.price).toLocaleString("id-ID")}
+        </span>
+      </button>
+    ))}
+  </div>
+</div>
+
+      {/* CART */}
+      <div className="space-y-2 mb-4 border-t pt-2 max-h-40 overflow-auto">
+        {cart.length === 0 ? (
+          <div className="text-gray-400 text-sm">Belum ada produk di keranjang</div>
+        ) : (
+          cart.map((item) => (
+            <div key={item.id} className="flex justify-between items-center text-sm">
+              <span>
+                {item.name} x{item.quantity}
+              </span>
+              <div className="flex gap-2 items-center">
+                <span>Rp {(item.price * item.quantity).toLocaleString("id-ID")}</span>
+                <button
+                  onClick={() => removeFromCart(item.id)}
+                  className="text-red-500 hover:text-red-700 text-xs"
+                >
+                  Hapus
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* TOTAL */}
+      <div className="mb-4 font-semibold">
+        Total: Rp{" "}
+        {cart
+          .reduce((sum, item) => sum + item.price * item.quantity, 0)
+          .toLocaleString("id-ID")}
+      </div>
+
+      {/* INPUT BAYAR */}
+      <input
+  type="number"
+  placeholder="Uang dibayar"
+  value={paidAmount === 0 ? "" : paidAmount}
+  onChange={(e) => setPaidAmount(e.target.value === "" ? 0 : Number(e.target.value))}
+  className="w-full border px-3 py-2 rounded-lg mb-4"
+/>
+
+      {/* KEMBALIAN */}
+      {paidAmount > 0 && (
+        <div className="mb-4 text-sm">
+          Kembalian: Rp{" "}
+          {(paidAmount -
+            cart.reduce((sum, item) => sum + item.price * item.quantity, 0) >
+          0
+            ? paidAmount -
+              cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+            : 0
+          ).toLocaleString("id-ID")}
+        </div>
+      )}
+
+      {/* BUTTON */}
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => {
+            // RESET SEMUA STATE
+            setCart([]);
+            setPaidAmount(0);
+            setShowTransaction(false);
+          }}
+          className="px-4 py-2 border rounded-lg"
+        >
+          Batal
+        </button>
+        <button
+          onClick={handleCheckout}
+          className="px-4 py-2 bg-gray-900 text-white rounded-lg"
+        >
+          Bayar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
           {/* STATS CARDS */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

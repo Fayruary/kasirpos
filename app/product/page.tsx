@@ -386,20 +386,6 @@ const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0); //
                 <p className="text-sm text-gray-500">
                   Menampilkan {filteredProducts.length} dari {totalProducts} produk
                 </p>
-                <div className="flex items-center gap-2">
-                  <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all">
-                    Previous
-                  </button>
-                  <button className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all">
-                    1
-                  </button>
-                  <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all">
-                    2
-                  </button>
-                  <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all">
-                    Next
-                  </button>
-                </div>
               </div>
             )}
           </div>
